@@ -1,214 +1,213 @@
 #include <stdio.h>
-#include <math.h>
-#include <string.h>
+#include <stdbool.h>
 
-struct Account {
-    char name[50];
-    double balance;
-    char password[50];
-};
-int validatePassword(const char* inputPassword, const char* actualPassword) 
-{
-    return strcmp(inputPassword, actualPassword)==0?1:0;
-}
-void withdraw(struct Account* account) 
-{
-    double amount;
-    printf("Enter the amount to withdraw: $");
-    scanf("%lf",&amount);
+#define SIZE 3
 
-    if (amount>0&&amount<=account->balance)
-    {
-        account->balance-=amount;
-        printf("Amount withdrawn:$%.2f\n",amount);
-    } 
-    else
-    {
-        printf("Insufficient balance or invalid amount!\n");
-    }
-}
-void viewBalance(struct Account* account) 
-{
-    char password[50];
-    printf("Enter your password to view balance: ");
-    scanf("%s",password);
+char board[SIZE][SIZE];
 
-    if (validatePassword(password, account->password))
-    {
-        printf("Account Holder: %s\n", account->name);
-        printf("Balance: $%.2f\n", account->balance);
-    } 
-    else 
-    {
-        printf("Invalid password!\n");
-    }
-}
-void sendMoney(struct Account* account)
+void initializeBoard()
 {
-    char recipient[50];
-    double amount;
-
-    printf("Enter recipient's name: ");
-    getchar();
-    fgets(recipient, sizeof(recipient), stdin);
-    recipient[strlen(recipient)-1]='\0';
-
-    printf("Enter the amount to send: $");
-    scanf("%lf",&amount);
-
-    if (amount>0 && amount<=account->balance) 
+    for (int i=0;i<SIZE;i++) 
     {
-        account->balance-=amount;
-        printf("$%.2f sent to %s\n",amount, recipient);
-    } 
-    else
-    {
-        printf("Insufficient balance or invalid amount!\n");
-    }
-}
-double calculateSimpleInterest(double principal, double rate, int time)
-{
-    return (principal*rate*time)/100;
-}
-double calculateCompoundInterest(double principal,double rate,int time)
-{
-    return principal*pow(1+(rate/100),time)-principal;
-}
-double calculateEMI(double principal,double rate,int time) 
-{
-    double r=rate/100;
-    double n=time*12;
-    double monthlyRate=r/12;
-    double emi=(principal*monthlyRate*pow(1+monthlyRate,n))/(pow(1+monthlyRate,n)- 1);
-    return emi;
-}
-void takeLoan()
-{
-    double loanAmount;
-    printf("Enter the loan amount: $");
-    scanf("%lf",&loanAmount);
-
-    double interestRate;
-    if (loanAmount<5000) 
-    {
-        interestRate=5.0;
-    }
-    else if (loanAmount>=5000 && loanAmount<10000) 
-    {
-        interestRate=7.5;
-    }
-    else 
-    {
-        interestRate=10.0;
-    }
-    int loanPeriod;
-    printf("Enter the loan period (in years): ");
-    scanf("%d",&loanPeriod);
-    double totalInterest=calculateSimpleInterest(loanAmount,interestRate,loanPeriod);
-    double totalAmount=loanAmount+totalInterest;
-    printf("Loan amount: $%.2f\n",loanAmount);
-    printf("Interest rate: %.2f%%\n",interestRate);
-    printf("Loan period: %d years\n",loanPeriod);
-    printf("Total interest: $%.2f\n",totalInterest);
-    printf("Total amount to repay: $%.2f\n",totalAmount);
-}
-int main() 
-{
-    char name[50], password[50];
-    double balance;
-    int choice;
-    printf("Welcome to the ATM!\n");
-    printf("Enter your name: ");
-    getchar();
-    fgets(name,sizeof(name),stdin);
-    name[strlen(name)- 1]='\0';
-    printf("Enter your account balance: $");
-    scanf("%lf",&balance);
-    printf("Create a password: ");
-    scanf("%s",password);
-    struct Account account;
-    strcpy(account.name, name);
-    account.balance=balance;
-    strcpy(account.password, password);
-    int exit = 0;
-    while (!exit)
-    {
-        printf("\n**** ATM Menu ****\n");
-        printf("1. Withdraw Money\n");
-        printf("2. View Balance\n");
-        printf("3. Send Money\n");
-        printf("4. Calculate Simple Interest\n");
-        printf("5. Calculate Compound Interest\n");
-        printf("6. Calculate EMI\n");
-        printf("7. Take a Loan\n");
-        printf("8. Exit\n");
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
-        switch (choice)
+        for (int j=0;j<SIZE;j++) 
         {
-            case 1:
-                withdraw(&account);
-                break;
-            case 2:
-                viewBalance(&account);
-                break;
-            case 3:
-                sendMoney(&account);
-                break;
-            case 4: {
-                double principal, rate;
-                int time;
-                printf("Enter principal amount: $");
-                scanf("%lf",&principal);
-                printf("Enter interest rate (%%): ");
-                scanf("%lf",&rate);
-                printf("Enter time period (in years): ");
-                scanf("%d",&time);
-                double simpleInterest=calculateSimpleInterest(principal,rate,time);
-                printf("Simple Interest: $%.2f\n",simpleInterest);
-                break;
-            }
-            case 5: 
+            board[i][j]=' ';
+        }
+    }
+}
+
+void displayBoard() 
+{
+    for (int i=0;i<SIZE;i++)
+    {
+        for (int j=0;j<SIZE;j++) 
+        {
+            printf(" %c ", board[i][j]);
+            if (j!=SIZE-1)
             {
-                double principal, rate;
-                int time;
-                printf("Enter principal amount: $");
-                scanf("%lf",&principal);
-                printf("Enter interest rate (%%): ");
-                scanf("%lf",&rate);
-                printf("Enter time period (in years): ");
-                scanf("%d",&time);
-                double compoundInterest=calculateCompoundInterest(principal,rate,time);
-                printf("Compound Interest: $%.2f\n",compoundInterest);
-                break;
+                printf("|");
             }
-            case 6: 
+        }
+        printf("\n");
+        if (i!=SIZE-1)
+        {
+            printf("-----------\n");
+        }
+    }
+}
+bool isBoardFull()
+{
+    for (int i=0;i<SIZE;i++)
+    {
+        for (int j=0;j<SIZE;j++) 
+        {
+            if (board[i][j]==' ') 
             {
-                double principal, rate;
-                int time;
-                printf("Enter principal amount: $");
-                scanf("%lf",&principal);
-                printf("Enter interest rate (%%): ");
-                scanf("%lf",&rate);
-                printf("Enter time period (in years): ");
-                scanf("%d",&time);
-                double emi=calculateEMI(principal,rate,time);
-                printf("EMI: $%.2f per month\n",emi);
-                break;
+                return false;
             }
-            case 7:
-                takeLoan();
-                break;
-            case 8:
-                printf("Thank you for using the ATM. Goodbye!\n");
-                exit = 1;
-                break;
-            default:
-                printf("Invalid choice. Please try again.\n");
-                break;
+        }
+    }
+    return true;
+}
+bool isGameOver(char player) 
+{
+    for (int i=0; i<SIZE;i++) 
+    {
+        if (board[i][0]==player && board[i][1]==player && board[i][2]==player) 
+        {
+            return true;
+        }
+    }
+    for (int i=0;i<SIZE;i++) 
+    {
+        if (board[0][i]==player && board[1][i]==player && board[2][i]==player)
+        {
+            return true;
+        }
+    }
+    if ((board[0][0]==player && board[1][1]==player && board[2][2]==player) ||
+        (board[0][2]==player && board[1][1]==player && board[2][0]==player))
+        {
+        return true;
+    }
+
+    return false;
+}
+bool isValidMove(int row, int col)
+{
+    if (row>=0 && row<SIZE && col>=0 && col<SIZE && board[row][col]==' ') 
+    {
+        return true;
+    }
+    return false;
+}
+
+void makeMove(int row, int col, char player) 
+{
+    board[row][col]=player;
+}
+bool minimax(char player, int* bestRow, int* bestCol) 
+{
+    int bestScore=-1000;
+    int score;
+
+    if (isGameOver('X'))
+    {
+        return -1;
+    }
+    else if (isGameOver('O')) 
+    {
+        return 1;
+    }
+    else if (isBoardFull()) 
+    {
+        return 0;
+    }
+
+    for (int i=0; i<SIZE;i++) 
+    {
+        for (int j=0; j<SIZE;j++) 
+        {
+            if (board[i][j]==' ') 
+            {
+                board[i][j]=player;
+
+                if (player=='O') 
+                {
+                    score = minimax('X',bestRow,bestCol);
+                    if (score>bestScore) 
+                    {
+                        bestScore=score;
+                        *bestRow=i;
+                        *bestCol=j;
+                    }
+                } 
+                else 
+                {
+                    score=minimax('O',bestRow,bestCol);
+                    if (score<bestScore) 
+                    {
+                        bestScore=score;
+                        *bestRow=i;
+                        *bestCol=j;
+                    }
+                }
+
+                board[i][j]=' ';
+            }
         }
     }
 
+    return bestScore;
+}
+void playGame() 
+{
+    int row, col;
+    char player='X';
+
+    printf("Welcome to Tic-Tac-Toe!\n");
+    printf("You are X, and the AI is O.\n");
+    printf("Enter row (0-%d) and column (0-%d) to make a move.\n", SIZE- 1, SIZE- 1);
+    initializeBoard();
+
+    while (true)
+    {
+        displayBoard();
+
+        if (player=='X') 
+        {
+            printf("Your turn. Enter row and column: ");
+            scanf("%d %d",&row,&col);
+            printf("\n");
+
+            if (isValidMove(row,col)) 
+            {
+                makeMove(row,col,player);
+                if (isGameOver(player)) 
+                {
+                    printf("Congratulations! You win!\n");
+                    displayBoard();
+                    break;
+                } else if (isBoardFull()) 
+                {
+                    printf("It's a tie!\n");
+                    displayBoard();
+                    break;
+                }
+                player='O';
+            }
+            else
+            {
+                printf("Invalid move. Try again.\n");
+            }
+        } 
+        else
+        {
+            printf("AI's turn...\n");
+            int bestRow,bestCol;
+            minimax('O',&bestRow,&bestCol);
+            makeMove(bestRow,bestCol,player);
+
+            if (isGameOver(player)) 
+            {
+                printf("AI wins!\n");
+                displayBoard();
+                break;
+            } else if (isBoardFull())
+            {
+                printf("It's a tie!\n");
+                displayBoard();
+                break;
+            }
+            player='X';
+        }
+    }
+}
+
+int main() 
+{
+    playGame();
     return 0;
 }
+
 
